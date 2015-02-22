@@ -1,4 +1,4 @@
-package clmgosdk
+package goclm
 
 import (
 	"encoding/json"
