@@ -1,4 +1,4 @@
-package main
+package clmgosdk
 
 import (
 	"encoding/json"
