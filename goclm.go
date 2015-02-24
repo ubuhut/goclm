@@ -1,4 +1,4 @@
-package goclm
+package clm
 
 import (
 	"encoding/json"
@@ -45,6 +45,67 @@ type ClmTaskResponse struct {
 	TransactionID string
 }
 
+
+func Auth(url, userw, passw string) (ClmService, error) {
+	fmt.Println("Auth:",url)
+	c := ClmService{}
+	c.URL=url
+	url=url+AUTH_ACTION
+	fmt.Println("Auth:", url, userw)
+	type AuthJson struct {
+		Name   string `json:"username"`
+		Password	string `json:"password"`
+	}
+	group := AuthJson{
+		Name:  userw ,
+		Password: passw,
+	}
+	b, err := json.Marshal(group)
+	if err != nil {
+		fmt.Println("Auth: error:", err)
+		return  c,err
+	}
+	os.Stdout.Write(b)
+	jsonStr := b
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+    req.Header.Set("Content-Type", "application/json")
+	fmt.Println("Auth: req=%s", req, "\n")
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+		fmt.Println("Auth: client.Do req:%s", req, err)
+		return c, err
+ 	}
+	var status int
+	if (err == nil) && (resp.StatusCode == 200) {
+        	status = UP
+    } else {
+        	status = DOWN
+    }
+	fmt.Println("Auth: StatusCode: %s status:",resp.StatusCode, status)
+    defer resp.Body.Close()
+    fmt.Println("Auth: response Status:", resp.Status)
+    fmt.Println("Auth: response Headers:", resp.Header)
+	contents, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+            fmt.Printf("Auth: ioutil.ReadAll err:%s", err)
+            return c, err
+    }
+    fmt.Printf("Auth: response Contents:%s\n", string(contents))
+
+	token := resp.Header[AUTHORIZATION_TOKEN]
+	fmt.Println("Auth: token:", token)
+	if token == nil {
+		fmt.Println("Auth: no auth token receieved")
+		c.authtoken = "aaa"
+		return c,fmt.Errorf("No auth token")
+	}
+	c.authtoken = token[0]
+	fmt.Println("Auth: Token:", token, c.authtoken)
+    body, _ := ioutil.ReadAll(resp.Body)
+    fmt.Println("Auth: Response Body:", string(body))
+	return c, nil
+}
 func (c* ClmService) Authenticate(url, userw, passw string) (error) {
 	c.URL=url
 	url=url+AUTH_ACTION
@@ -96,13 +157,16 @@ func (c* ClmService) Authenticate(url, userw, passw string) (error) {
 		fmt.Println("Auth: no auth token receieved")
 		c.authtoken = "aaa"
 		return fmt.Errorf("No auth token")
+
+	} else {
+		c.authtoken = token[0]
+		fmt.Println("Auth: Token:", token, c.authtoken)
+    	body, _ := ioutil.ReadAll(resp.Body)
+    	fmt.Println("Auth: Response Body:", string(body))
 	}
-	c.authtoken = token[0]
-	fmt.Println("Auth: Token:", token, c.authtoken)
-    body, _ := ioutil.ReadAll(resp.Body)
-    fmt.Println("Auth: Response Body:", string(body))
 	return nil
 }
+
 func (c *ClmService)	GetTask(taskURL string) (ClmTaskResponse, error) {
 	fmt.Println("GetTask: taskurl=", taskURL)
 	req, err := http.NewRequest("GET", taskURL, nil)
