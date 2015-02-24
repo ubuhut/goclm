@@ -2,13 +2,15 @@
 A simple incomplete Golang sdk for BMC Cloud Lifecycle Management Product - CLM
 
 Functions implemented:
-func Auth(url, userw, passw string) (ClmService, error) - 
+
+- [x] func Auth(url, userw, passw string) (ClmService, error) - 
     Authenticate a CLM user/password against a CLM URL that is an API end point 
-func (c *ClmService) ServiceCreate(offeringName, offeringREID, offeringGUID, serviceName string, quantity int, userName, password, hostNamePrefix, tenantName string) (error) -
+- [x] func (c *ClmService) ServiceCreate(offeringName, offeringREID, offeringGUID, serviceName string, quantity int, userName, password, hostNamePrefix, tenantName string) (error) -
     Request an offering
 	To Do: Convert ServiceOffering to REID and GUID automatically in the code and remove these 2 args
 	
 To Do:
+```golang
 func (c *ClmService) ServiceDecommission()
 func (c *ClmService) ServiceStart()
 func (c *ClmService) ServiceStop()
@@ -28,3 +30,4 @@ Sample code:
 	...
 	err:=clmService.ServiceCreate(serviceOffering, serviceOfferingREID, serviceOfferingGUID, serviceName, quantity, userName, userPassword, hostNamePrefix, tenantName)
 
+```
